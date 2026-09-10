@@ -4,7 +4,7 @@ import os
 from collections import defaultdict
 from WordNetMapper import WordNetMapper
 _ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-_DEFAULT_RAW_JSON_PATH = os.path.join(_ROOT, 'data', 'raw', 'greek', 'wordnet.json')
+_DEFAULT_RAW_JSON_PATH = os.path.join(_ROOT, 'data', 'raw', 'ancient_greek', 'wordnet.json')
 _DEFAULT_CILI_PATH = os.path.join(_ROOT, 'data', 'cili.tsv')
 os.chdir(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
@@ -46,21 +46,7 @@ def split_examples(text):
 
 
 def convert_to_json(raw_json_path=_DEFAULT_RAW_JSON_PATH, cili_path=_DEFAULT_CILI_PATH):
-    """
-    Convert Ancient Greek WordNet raw JSON into the standard GWA LMF-style
-    dict used across all converters in this project.
 
-    Parameters
-    ----------
-    raw_json_path : str
-        Path to the raw wordnet.json file
-    cili_path : str
-        Path to the cili.tsv ILI lookup file
-
-    Returns
-    -------
-    dict with keys: 'meta', 'synsets', 'lexical_entries'
-    """
     my_mapper = WordNetMapper()
     pwn_2_ili = _load_ili_lookup(cili_path)
 
