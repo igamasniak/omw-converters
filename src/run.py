@@ -18,8 +18,8 @@ os.makedirs(JSON_DIR, exist_ok=True)
 os.makedirs(XML_DIR, exist_ok=True)
 
 from src.ancientgreek2json import convert_to_json as convert_ancientgreek
+from src.greek2json import convert_to_json as convert_greek
 from src.finnish2json import convert_to_json as convert_finnish
-from src.irish2json import convert_to_json as convert_irish
 from src.javanese2json import convert_to_json as convert_javanese
 from src.latin2json import convert_to_json as convert_latin
 from src.latinrevision2json import convert_to_json as convert_latin_revised
@@ -34,8 +34,8 @@ from src.indowordnet2json import convert_to_json as convert_indo
 
 CONVERTERS = [
     ("Ancient Greek", convert_ancientgreek),
+    ("Greek", convert_greek),
     ("Finnish", convert_finnish),
-    ("Irish", convert_irish),
     ("Old Javanese", convert_javanese),
     ("Latin", convert_latin),
     ("Latin Revised (TTL)", convert_latin_revised),
@@ -75,7 +75,6 @@ DC_ATTRS = [
 
 
 def step_convert_to_json():
-    """Call each language specific converter to produce standard JSON."""
     print("\nStep 1: Raw data → standard JSON")
     print("-" * 40)
     for name, func in CONVERTERS:
@@ -87,7 +86,6 @@ def step_convert_to_json():
             print(f"FAILED ({e})")
 
 def json_to_lmf(json_path, xml_path):
-    """Convert a standard JSON wordnet to WN-LMF 1.4 XML."""
     with open(json_path, "r", encoding="utf-8") as f:
         data = json.load(f)
 
@@ -149,7 +147,6 @@ def json_to_lmf(json_path, xml_path):
         f.write(xml_str)
 
 def step_convert_to_xml():
-    """Convert all standard JSON files to WN-LMF XML."""
     print("\nStep 2: Standard JSON → WN-LMF XML")
     print("-" * 40)
     for fname in sorted(os.listdir(JSON_DIR)):
@@ -167,7 +164,6 @@ def step_convert_to_xml():
             print(f"FAILED ({e})")
 
 def validate_lmf(xml_path):
-    """Validate an XML file against the WN-LMF 1.4 DTD."""
     with open(xml_path, "rb") as f:
         tree = etree.parse(f)
     with open(DTD_PATH, "rb") as f:
@@ -179,7 +175,6 @@ def validate_lmf(xml_path):
 
 
 def step_validate():
-    """Validate all XML files against the DTD."""
     print("\nStep 3: Validate XML")
     print("-" * 40)
 
@@ -209,7 +204,6 @@ def step_validate():
 
 
 def step_compress():
-    """Compress each XML file with XZ."""
     print("\nStep 4: Compress (XZ)")
     print("-" * 40)
 
