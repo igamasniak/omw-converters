@@ -135,8 +135,6 @@ def convert_to_json(xml_path=_DEFAULT_XML_PATH, cili_path=_DEFAULT_CILI_PATH, st
             if lemma:
                 senses.append((lemma, pos, synset_id))
 
-    # Drop relations pointing at a synset id not present anywhere in
-    # this file (WN-LMF's relation target is an IDREF and must resolve).
     known_ids = set(synsets.keys())
     dangling_dropped = 0
     for synset in synsets.values():
@@ -144,7 +142,6 @@ def convert_to_json(xml_path=_DEFAULT_XML_PATH, cili_path=_DEFAULT_CILI_PATH, st
         dangling_dropped += len(synset['relations']) - len(kept)
         synset['relations'] = kept
 
-    # Group into lexical entries, one per (lemma, pos) pair.
     lemma_to_synsets = defaultdict(list)
     for lemma, pos, synset_id in senses:
         key = (lemma, pos)

@@ -124,7 +124,7 @@ def convert_to_json(raw_json_path=_DEFAULT_RAW_JSON_PATH, cili_path=_DEFAULT_CIL
             'label': 'Ancient Greek WordNet',
             'language': 'grc',
             'email': 'iga.masniak@ens.psl.eu',
-            'license': '',
+            'license': 'GPL-3.0',
             'version': '',
             'dc:creator': 'William Michael Short',
             'dc:contributor': 'Iga Masniak',

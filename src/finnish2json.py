@@ -49,7 +49,7 @@ def convert_to_json(xml_path=_DEFAULT_XML_PATH):
             'label': 'FinnWordNet',
             'language': 'fi',
             'email': 'krister.linden@helsinki.fi',
-            'license': '',
+            'license': 'CC BY 3.0',
             'version': '2.0.1',
             'dc:creator': 'Krister Lindén & Jyrki Niemi',
             'dc:contributor': 'Iga Masniak',
