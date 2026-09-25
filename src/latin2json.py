@@ -128,7 +128,7 @@ def convert_to_json(raw_json_path='data/raw/latin/wordnet.json', cili_path='data
             'label': 'Latin WordNet',
             'language': 'la',
             'email': 'iga.masniak@ens.psl.eu',
-            'license': 'https://creativecommons.org/licenses/by-nc-sa/4.0/',
+            'license': '',
             'version': '',
             'dc:creator': 'William Michael Short',
             'dc:contributor': 'Iga Masniak',
