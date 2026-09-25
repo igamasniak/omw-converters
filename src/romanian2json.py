@@ -179,16 +179,16 @@ def convert_to_json(raw_pickle_path='data/raw/romanian/rowordnet.pickle', cili_p
     return {
         'meta': {
             'id': 'romanian-ro',
-            'label': 'Romanian WordNet',
+            'label': 'RoWordNet',
             'language': 'ro',
             'email': 'iga.masniak@ens.psl.eu',
-            'license': 'https://creativecommons.org/licenses/by-nc-sa/4.0/',
-            'version': '1.0',
+            'license': 'MIT License',
+            'version': '',
             'dc:creator': 'Dan Tufiș, Verginica Barbu Mititelu',
             'dc:contributor': 'Iga Masniak',
             'dc:source': 'Tufiș & Barbu Mititelu (2014), The Lexical Ontology for Romanian, Springer; '
                           'Dumitrescu et al. (2018), RoWordNet - A Python API for the Romanian WordNet, IEEE ECAI',
-            'dc:description': 'Romanian WordNet converted to GWA LMF format by Iga Masniak'
+            'dc:description': 'Romanian WordNet (RoWordNet) converted to GWA LMF format by Iga Masniak'
         },
         'synsets': list(synsets.values()),
         'lexical_entries': [

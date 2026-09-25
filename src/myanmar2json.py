@@ -79,9 +79,9 @@ def convert_to_json(raw_tsv_path='data/raw/myanmar/mow-0.1.3-mya_20171005165336.
 
     return {
         'meta': {
-            'id': 'myanmar-mya',
+            'id': 'myanmar-my',
             'label': 'Myanmar Open WordNet',
-            'language': 'mya',
+            'language': 'my',
             'email': 'iga.masniak@ens.psl.eu',
             'license': 'https://creativecommons.org/licenses/by/4.0/',
             'version': '0.1.3',

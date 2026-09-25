@@ -218,15 +218,15 @@ def convert_to_json(raw_dir='data/raw/norwegian/dat', cili_path='data/cili.tsv')
 
     return {
         'meta': {
-            'id': 'norwegian-nor',
-            'label': 'Norwegian WordNet',
-            'language': 'nor',
+            'id': 'norwegian-nb',
+            'label': 'Norwegian Wordnet - Bokmål',
+            'language': 'nb',
             'email': 'iga.masniak@ens.psl.eu',
             'license': 'https://creativecommons.org/licenses/by-nc-sa/4.0/',
             'version': '1.0',
             'dc:creator': 'Arne Martinus Lindstad',
             'dc:contributor': 'Iga Masniak',
-            'dc:description': 'Norwegian WordNet converted to GWA LMF format by Iga Masniak'
+            'dc:description': 'Norwegian Wordnet - Bokmål converted to GWA LMF format by Iga Masniak'
         },
         'synsets': synsets_list,
         'lexical_entries': lexical_entries
