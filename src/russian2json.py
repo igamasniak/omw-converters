@@ -143,11 +143,11 @@ def convert_to_json(raw_dir='data/raw/russian', cili_path='data/cili.tsv'):
     return {
         'meta': {
             'id': 'russian-ru',
-            'label': 'Russian WordNet',
+            'label': 'RuWordNet',
             'language': 'ru',
             'email': 'iga.masniak@ens.psl.eu',
-            'license': 'https://creativecommons.org/licenses/by-nc-sa/4.0/',
-            'version': '1.0',
+            'license': 'CC BY-SA 4.0',
+            'version': '',
             'dc:creator': 'Natalia Loukachevitch',
             'dc:contributor': 'Iga Masniak',
             'dc:description': 'Russian WordNet (RuWordNet) converted to GWA LMF format by Iga Masniak'

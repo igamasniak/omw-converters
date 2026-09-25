@@ -18,13 +18,13 @@ os.makedirs(JSON_DIR, exist_ok=True)
 os.makedirs(XML_DIR, exist_ok=True)
 
 from src.ancientgreek2json import convert_to_json as convert_ancientgreek
+from src.welsh2json import convert_to_json as convert_welsh
 from src.greek2json import convert_to_json as convert_greek
 from src.finnish2json import convert_to_json as convert_finnish
 from src.javanese2json import convert_to_json as convert_javanese
 from src.latin2json import convert_to_json as convert_latin
 from src.latinrevision2json import convert_to_json as convert_latin_revised
 from src.latinrevisioncsv2json import convert_to_json as convert_latin_csv
-from src.myanmar2json import convert_to_json as convert_myanmar
 from src.norwegian2json import convert_to_json as convert_norwegian
 from src.romanian2json import convert_to_json as convert_romanian
 from src.russian2json import convert_to_json as convert_russian
@@ -34,13 +34,13 @@ from src.indowordnet2json import convert_to_json as convert_indo
 
 CONVERTERS = [
     ("Ancient Greek", convert_ancientgreek),
+    ("Welsh", convert_welsh),
     ("Greek", convert_greek),
     ("Finnish", convert_finnish),
     ("Old Javanese", convert_javanese),
     ("Latin", convert_latin),
     ("Latin Revised (TTL)", convert_latin_revised),
     ("Latin Revised (CSV)", convert_latin_csv),
-    ("Myanmar", convert_myanmar),
     ("Norwegian Bokmål", convert_norwegian),
     ("Romanian", convert_romanian),
     ("Russian", convert_russian),
