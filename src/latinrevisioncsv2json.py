@@ -101,11 +101,11 @@ def convert_to_json(raw_csv_path='data/raw/latin_revised/LiLa_LatinWordnet.csv',
             'label': 'Latin WordNet (LiLa CSV)',
             'language': 'la',
             'email': 'iga.masniak@ens.psl.eu',
-            'license': 'https://creativecommons.org/licenses/by-nc-sa/4.0/',
+            'license': 'CC BY SA',
             'version': '3.0',
             'dc:creator': 'Eleonora Litta, Greta Franzini, Giulia Pedonese, Marco Passarotti',
             'dc:contributor': 'Iga Masniak',
-            'dc:description': 'LiLa Latin WordNet CSV (mapped to PWN 3.0) converted to GWA LMF format by Iga Masniak'
+            'dc:description': 'LiLa Latin WordNet CSV converted to GWA LMF format by Iga Masniak'
         },
         'synsets': list(synsets.values()),
         'lexical_entries': lexical_entries

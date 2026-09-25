@@ -210,14 +210,14 @@ def convert_to_json(ttl_path='data/raw/latin_revised/lwn31.ttl',
     return {
         'meta': {
             'id': 'latin-revised-la',
-            'label': 'Latin WordNet (Revised)',
+            'label': 'Latin WordNet (Revision)',
             'language': 'la',
             'email': 'iga.masniak@ens.psl.eu',
-            'license': 'https://creativecommons.org/licenses/by-nc-sa/4.0/',
+            'license': 'CC BY SA',
             'version': '3.1',
             'dc:creator': 'Eleonora Litta, Greta Franzini, Giulia Pedonese, Marco Passarotti',
             'dc:contributor': 'Iga Masniak',
-            'dc:description': 'Revised Latin WordNet converted to GWA LMF format by Iga Masniak'
+            'dc:description': 'Latin WordNet Revision converted to GWA LMF format by Iga Masniak'
         },
         'synsets': synsets_list,
         'lexical_entries': lexical_entries
