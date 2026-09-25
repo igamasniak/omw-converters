@@ -14,21 +14,7 @@ def _load_ili_lookup(cili_path):
 
 
 def convert_to_json(raw_csv_path='data/raw/javanese/wn-kaw.csv', cili_path='data/cili.tsv'):
-    """
-    Convert Old Javanese WordNet raw CSV into the standard GWA LMF-style
-    dict used across all converters in this project.
 
-    Parameters
-    ----------
-    raw_csv_path : str
-        Path to the wn-kaw.csv file
-    cili_path : str
-        Path to the cili.tsv ILI lookup file
-
-    Returns
-    -------
-    dict with keys: 'meta', 'synsets', 'lexical_entries'
-    """
     pwn_2_ili = _load_ili_lookup(cili_path)
 
     synsets = {}

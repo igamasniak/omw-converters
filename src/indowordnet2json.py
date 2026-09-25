@@ -14,12 +14,12 @@ os.chdir(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 # Full language name (as used in the raw TSV column prefixes) -> ISO 639-3 code
 LANG_CODES = {
-    'kashmiri': 'kas', 'konkani': 'kok', 'assamese': 'asm',
-    'nepali': 'nep', 'sanskrit': 'san', 'marathi': 'mar',
-    'kannada': 'kan', 'oriya': 'ori', 'punjabi': 'pan',
-    'urdu': 'urd', 'gujarati': 'guj', 'bodo': 'brx',
-    'malayalam': 'mal', 'english': 'eng', 'manipuri': 'mni',
-    'hindi': 'hin', 'telugu': 'tel', 'tamil': 'tam'
+    'kashmiri': 'ks', 'konkani': 'kok', 'assamese': 'as',
+    'nepali': 'ne', 'sanskrit': 'sa', 'marathi': 'mr',
+    'kannada': 'kn', 'oriya': 'or', 'punjabi': 'pa',
+    'urdu': 'ur', 'gujarati': 'gu', 'bodo': 'brx',
+    'malayalam': 'ml', 'english': 'en', 'manipuri': 'mni',
+    'hindi': 'hi', 'telugu': 'te', 'tamil': 'ta'
 }
 
 SUPPORTED_LANGUAGES = list(LANG_CODES)
@@ -69,16 +69,6 @@ def split_lemma(lemma, lang):
 
 @lru_cache(maxsize=None)
 def _build_all_language_data(tsv_path, cili_path):
-    """
-    Parses the full IndoWordNet TSV once and builds synset/sense data for
-    every language column found. Cached so that calling convert_to_json()
-    once per language (as main.py's CONVERTERS loop does) doesn't re-parse
-    the TSV or re-instantiate WordNetMapper 18 times.
-
-    Returns
-    -------
-    (synsets_by_lang, senses_by_lang)
-    """
     my_mapper = WordNetMapper()
     pwn_2_ili = _load_ili_lookup(cili_path)
 
@@ -122,24 +112,7 @@ def _build_all_language_data(tsv_path, cili_path):
 
 
 def convert_to_json(lang, tsv_path=_DEFAULT_TSV_PATH, cili_path=_DEFAULT_CILI_PATH):
-    """
-    Convert one language's slice of the IndoWordNet raw TSV into the
-    standard GWA LMF-style dict used across all converters in this project.
 
-    Parameters
-    ----------
-    lang : str
-        Language name as used in the TSV column prefixes, e.g. 'hindi',
-        'sanskrit', 'tamil'. See SUPPORTED_LANGUAGES for the full list.
-    tsv_path : str
-        Path to new_indo_wordnet.tsv
-    cili_path : str
-        Path to the cili.tsv ILI lookup file
-
-    Returns
-    -------
-    dict with keys: 'meta', 'synsets', 'lexical_entries'
-    """
     if lang not in LANG_CODES:
         raise ValueError(
             f"Unknown IndoWordNet language '{lang}'. "
@@ -157,7 +130,7 @@ def convert_to_json(lang, tsv_path=_DEFAULT_TSV_PATH, cili_path=_DEFAULT_CILI_PA
     return {
         'meta': {
             'id': f'indowordnet-{lang_code}',
-            'label': f'IndoWordNet {lang.capitalize()}',
+            'label': f'IndoWordnet {lang.capitalize()}',
             'language': lang_code,
             'email': 'pb@cse.iitb.ac.in; dipteshkanojia@gmail.com; iga.masniak@ens.psl.eu',
             'license': 'https://creativecommons.org/licenses/by-nc-sa/4.0/',

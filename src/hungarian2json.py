@@ -199,7 +199,7 @@ def convert_to_json(xml_path=_DEFAULT_XML_PATH, cili_path=_DEFAULT_CILI_PATH, st
             'label': 'Hungarian WordNet',
             'language': 'hu',
             'email': 'iga.masniak@ens.psl.eu',
-            'license': '',
+            'license': 'CC BY-SA 4.0',
             'version': '',
             'dc:creator': 'Mihaltz Marton',
             'dc:contributor': 'Iga Masniak',
