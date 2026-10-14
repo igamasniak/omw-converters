@@ -1,24 +1,13 @@
-import csv
-import json
 import os
 import xml.etree.ElementTree as ET
-from collections import defaultdict
 
-from WordNetMapper import WordNetMapper
+from src.common import IliResolver, build_output, make_synset, save_output
 
-_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-_DEFAULT_XML_PATH = os.path.join(_ROOT, 'data', 'raw', 'greek', 'wngre2.xml')
-_DEFAULT_CILI_PATH = os.path.join(_ROOT, 'data', 'cili.tsv')
-_DEFAULT_OUTPUT_PATH = os.path.join(_ROOT, 'data', 'jsons', 'GreekWordNet_standard.json')
+os.chdir(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-my_mapper = WordNetMapper()
+RAW_PATH = 'data/raw/greek/wngre2.xml'
 
-POS_MAP = {
-    'n': 'n',
-    'v': 'v',
-    'a': 'a',
-    'b': 'r',
-}
+POS_MAP = {'n': 'n', 'v': 'v', 'a': 'a', 'b': 'r'}
 
 VALID_RELTYPES = frozenset({
     'agent', 'also', 'attribute', 'be_in_state', 'causes', 'classified_by',
@@ -50,157 +39,57 @@ RELATION_MAP = {
     'also_see': 'also',
     'near_antonym': 'antonym',
     'category_domain': 'domain_topic',
+    'region_domain': 'domain_region',
+    'usage_domain': 'exemplifies',
+}
+
+META = {
+    'id': 'greek-el',
+    'label': 'Greek WordNet',
+    'language': 'el',
+    'email': 'iga.masniak@ens.psl.eu',
+    'license': 'CC BY-SA',
+    'version': '2.0',
+    'dc:creator': 'Lazaros Ioannidis',
+    'dc:contributor': 'Iga Masniak',
+    'dc:description': 'Greek WordNet converted to GWA LMF format by Iga Masniak'
 }
 
 
-def _map_reltype(raw_type, unmapped_counts):
+def map_reltype(raw_type):
     if raw_type in VALID_RELTYPES:
         return raw_type
-    if raw_type in RELATION_MAP:
-        return RELATION_MAP[raw_type]
-    unmapped_counts[raw_type] += 1
-    return 'other'
+    return RELATION_MAP.get(raw_type, 'other')
 
 
-def _load_ili_lookup(cili_path):
-    pwn_2_ili = {}
-    with open(cili_path, 'r', encoding='utf-8') as f:
-        for row in csv.DictReader(f, delimiter='\t'):
-            pwn_2_ili[row['origin'][8:16]] = row['ili_id']
-    return pwn_2_ili
+def read_source(path):
+    return ET.parse(path).getroot().findall('SYNSET')
 
 
-def _resolve_ili(eng20_id, pwn_2_ili):
-    if not eng20_id.startswith('ENG20-'):
-        return ''
-    offset_20 = eng20_id.split('-')[1]
-    try:
-        offset_30, _pos = my_mapper.map_offset_to_offset(offset_20, '20', '30')
-    except Exception:
-        return ''
-    return pwn_2_ili.get(offset_30, '')
+def convert_to_json(raw_path=RAW_PATH, cili_path='data/cili.tsv'):
+    ili = IliResolver(cili_path)
+    synsets, senses = {}, []
 
-
-def convert_to_json(xml_path=_DEFAULT_XML_PATH, cili_path=_DEFAULT_CILI_PATH, stats=None):
-
-    pwn_2_ili = _load_ili_lookup(cili_path)
-
-    tree = ET.parse(xml_path)
-    root = tree.getroot()
-
-    synsets = {}
-    senses = []  # (lemma, pos, synset_id)
-    skipped_placeholder = 0
-    unmapped_reltypes = defaultdict(int)
-
-    for syn_el in root.findall('SYNSET'):
-        synset_id_raw = syn_el.findtext('ID')
-        if not synset_id_raw:
-            continue
-        synset_id = synset_id_raw.strip()
-
-        pos = POS_MAP.get(syn_el.findtext('POS') or '')
-        if pos is None:
+    for syn in read_source(raw_path):
+        synset_id = (syn.findtext('ID') or '').strip()
+        pos = POS_MAP.get(syn.findtext('POS') or '')
+        if not synset_id or not pos:
             continue
 
-        ili = _resolve_ili(synset_id, pwn_2_ili)
-        definition = (syn_el.findtext('DEF') or '').strip()
+        offset = synset_id.split('-')[1] if synset_id.startswith('ENG20-') else ''
+        relations = [
+            {'target': (r.text or '').strip(), 'relType': map_reltype((r.findtext('TYPE') or '').strip())}
+            for r in syn.findall('ILR') if (r.text or '').strip() and (r.findtext('TYPE') or '').strip()
+        ]
+        synsets[synset_id] = make_synset(synset_id, pos, ili.get(offset, pos, '20'),
+                                         syn.findtext('DEF') or '', relations=relations)
+        senses += [(lit.text, pos, synset_id) for lit in syn.findall('SYNONYM/LITERAL')]
 
-        relations = []
-        for ilr in syn_el.findall('ILR'):
-            target = (ilr.text or '').strip()
-            type_el = ilr.find('TYPE')
-            raw_rel_type = (type_el.text or '').strip() if type_el is not None else ''
-            if target and raw_rel_type:
-                rel_type = _map_reltype(raw_rel_type, unmapped_reltypes)
-                relations.append({'target': target, 'relType': rel_type})
-
-        synsets[synset_id] = {
-            'id': synset_id,
-            'ili': ili,
-            'pos': pos,
-            'definition': definition,
-            'examples': [],
-            'semfield': '',
-            'relations': relations,
-        }
-
-        synonym_el = syn_el.find('SYNONYM')
-        if synonym_el is None or synonym_el.find('LITERAL') is None:
-            skipped_placeholder += 1
-            continue
-
-        for lit_el in synonym_el.findall('LITERAL'):
-            lemma = (lit_el.text or '').strip()
-            if lemma:
-                senses.append((lemma, pos, synset_id))
-
-    known_ids = set(synsets.keys())
-    dangling_dropped = 0
     for synset in synsets.values():
-        kept = [r for r in synset['relations'] if r['target'] in known_ids]
-        dangling_dropped += len(synset['relations']) - len(kept)
-        synset['relations'] = kept
+        synset['relations'] = [r for r in synset['relations'] if r['target'] in synsets]
 
-    lemma_to_synsets = defaultdict(list)
-    for lemma, pos, synset_id in senses:
-        key = (lemma, pos)
-        if synset_id not in lemma_to_synsets[key]:
-            lemma_to_synsets[key].append(synset_id)
-
-    lexical_entries = [
-        {'id': i, 'lemma': lemma, 'pos': pos, 'senses': synset_ids}
-        for i, ((lemma, pos), synset_ids) in enumerate(sorted(lemma_to_synsets.items()))
-    ]
-
-    output = {
-        'meta': {
-            'id': 'greek-el',
-            'label': 'Greek WordNet',
-            'language': 'el',
-            'email': 'iga.masniak@ens.psl.eu',
-            'license': '',
-            'version': '20',
-            'dc:creator': 'Lazaros Ioannidis',
-            'dc:contributor': 'Iga Masniak',
-            'dc:description': 'Greek WordNet converted to format by Iga Masniak',
-        },
-        'synsets': list(synsets.values()),
-        'lexical_entries': lexical_entries,
-    }
-
-    if stats is not None:
-        stats['skipped_placeholder'] = skipped_placeholder
-        stats['unmapped_reltypes'] = dict(unmapped_reltypes)
-        stats['dangling_dropped'] = dangling_dropped
-
-    return output
+    return build_output(META, synsets, senses)
 
 
 if __name__ == '__main__':
-    run_stats = {}
-    data = convert_to_json(stats=run_stats)
-
-    if run_stats['skipped_placeholder']:
-        print(f"[greek2json] Note: {run_stats['skipped_placeholder']} synsets had no LITERAL "
-              f"at all and contributed no lexical entries.")
-    if run_stats['unmapped_reltypes']:
-        print("[greek2json] Note: relTypes with no WN-LMF match, mapped to 'other':")
-        for rel_type, count in sorted(run_stats['unmapped_reltypes'].items(), key=lambda kv: -kv[1]):
-            print(f"    {rel_type}: {count}")
-    if run_stats['dangling_dropped']:
-        print(f"[greek2json] Note: {run_stats['dangling_dropped']} relation(s) dropped, "
-              f"target synset not present anywhere in wngre2.xml.")
-
-    os.makedirs(os.path.dirname(_DEFAULT_OUTPUT_PATH), exist_ok=True)
-    with open(_DEFAULT_OUTPUT_PATH, 'w', encoding='utf-8') as f:
-        json.dump(data, f, indent=4, ensure_ascii=False)
-
-    n_synsets = len(data['synsets'])
-    n_entries = len(data['lexical_entries'])
-    n_with_ili = sum(1 for s in data['synsets'] if s['ili'])
-
-    print(f'Done: {_DEFAULT_OUTPUT_PATH}')
-    print(f'Synsets: {n_synsets}')
-    print(f'Lexical entries: {n_entries}')
-    print(f'With ILI: {n_with_ili} ({n_with_ili / n_synsets:.1%})')
+    save_output(convert_to_json(), 'GreekWordNet')
