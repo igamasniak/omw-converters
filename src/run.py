@@ -1,11 +1,9 @@
-#!/usr/bin/env python3
-"""Pipeline for converting multilingual wordnets to WN-LMF 1.4 XML."""
-
 import json
 import lzma
 import os
 import sys
 import xml.etree.ElementTree as ET
+
 from lxml import etree
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -18,52 +16,51 @@ os.makedirs(JSON_DIR, exist_ok=True)
 os.makedirs(XML_DIR, exist_ok=True)
 
 from src.ancientgreek2json import convert_to_json as convert_ancientgreek
+from src.scottishgaelic2json import convert_to_json as convert_scottishgaelic
 from src.welsh2json import convert_to_json as convert_welsh
 from src.greek2json import convert_to_json as convert_greek
 from src.finnish2json import convert_to_json as convert_finnish
-from src.javanese2json import convert_to_json as convert_javanese
 from src.latin2json import convert_to_json as convert_latin
 from src.latinrevision2json import convert_to_json as convert_latin_revised
-from src.latinrevisioncsv2json import convert_to_json as convert_latin_csv
 from src.norwegian2json import convert_to_json as convert_norwegian
 from src.romanian2json import convert_to_json as convert_romanian
 from src.russian2json import convert_to_json as convert_russian
 from src.sanskrit2json import convert_to_json as convert_sanskrit
 from src.hungarian2json import convert_to_json as convert_hungarian
 from src.indowordnet2json import convert_to_json as convert_indo
+from src.mongolian2json import convert_to_json as convert_mongolian
+from src.tatar2json import convert_to_json as convert_tatar
+from src.bengali2json import convert_to_json as convert_bengali
+from src.filipino2json import convert_to_json as convert_filipino
+
+INDO_LANGUAGES = [
+    ("Assamese", "assamese"), ("Bodo", "bodo"), ("English", "english"), ("Gujarati", "gujarati"),
+    ("Hindi", "hindi"), ("Kannada", "kannada"), ("Kashmiri", "kashmiri"), ("Konkani", "konkani"),
+    ("Malayalam", "malayalam"), ("Manipuri", "manipuri"), ("Marathi", "marathi"), ("Nepali", "nepali"),
+    ("Odia", "oriya"), ("Punjabi", "punjabi"), ("Sanskrit", "sanskrit"), ("Tamil", "tamil"),
+    ("Telugu", "telugu"), ("Urdu", "urdu"),
+]
 
 CONVERTERS = [
-    ("Ancient Greek", convert_ancientgreek),
-    ("Welsh", convert_welsh),
-    ("Greek", convert_greek),
-    ("Finnish", convert_finnish),
-    ("Old Javanese", convert_javanese),
-    ("Latin", convert_latin),
-    ("Latin Revised (TTL)", convert_latin_revised),
-    ("Latin Revised (CSV)", convert_latin_csv),
-    ("Norwegian Bokmål", convert_norwegian),
-    ("Romanian", convert_romanian),
-    ("Russian", convert_russian),
-    ("Hungarian", convert_hungarian),
-    ("Sanskrit", convert_sanskrit),
-    ("IndoWordNet Assamese", lambda: convert_indo("assamese")),
-    ("IndoWordNet Bodo", lambda: convert_indo("bodo")),
-    ("IndoWordNet English", lambda: convert_indo("english")),
-    ("IndoWordNet Gujarati", lambda: convert_indo("gujarati")),
-    ("IndoWordNet Hindi", lambda: convert_indo("hindi")),
-    ("IndoWordNet Kannada", lambda: convert_indo("kannada")),
-    ("IndoWordNet Kashmiri", lambda: convert_indo("kashmiri")),
-    ("IndoWordNet Konkani", lambda: convert_indo("konkani")),
-    ("IndoWordNet Malayalam", lambda: convert_indo("malayalam")),
-    ("IndoWordNet Manipuri", lambda: convert_indo("manipuri")),
-    ("IndoWordNet Marathi", lambda: convert_indo("marathi")),
-    ("IndoWordNet Nepali", lambda: convert_indo("nepali")),
-    ("IndoWordNet Odia", lambda: convert_indo("oriya")),
-    ("IndoWordNet Punjabi", lambda: convert_indo("punjabi")),
-    ("IndoWordNet Sanskrit", lambda: convert_indo("sanskrit")),
-    ("IndoWordNet Tamil", lambda: convert_indo("tamil")),
-    ("IndoWordNet Telugu", lambda: convert_indo("telugu")),
-    ("IndoWordNet Urdu", lambda: convert_indo("urdu")),
+    ("Ancient Greek", "AncientGreekWordNet", convert_ancientgreek),
+    ("Scottish Gaelic", "ScottishGaelicWordNet", convert_scottishgaelic),
+    ("Welsh", "WelshWordNet", convert_welsh),
+    ("Greek", "GreekWordNet", convert_greek),
+    ("Finnish", "FinnishWordNet", convert_finnish),
+    ("Latin", "LatinWordNet", convert_latin),
+    ("Latin Revised", "LatinWordNet_revised", convert_latin_revised),
+    ("Norwegian Bokmål", "NorwegianWordNet", convert_norwegian),
+    ("Romanian", "RomanianWordNet", convert_romanian),
+    ("Russian", "RussianWordNet", convert_russian),
+    ("Hungarian", "HungarianWordNet", convert_hungarian),
+    ("Sanskrit", "SanskritWordNet", convert_sanskrit),
+    ("Mongolian", "MongolianWordNet", convert_mongolian),
+    ("Tatar", "TatarWordNet", convert_tatar),
+    ("Bengali", "BengaliWordNet", convert_bengali),
+    ("Filipino", "FilipinoWordNet", convert_filipino),
+] + [
+    (f"IndoWordNet {label}", f"IndoWordNet_{lang}", lambda lang=lang: convert_indo(lang))
+    for label, lang in INDO_LANGUAGES
 ]
 
 REQUIRED_ATTRS = ["id", "label", "language", "email", "license", "version"]
@@ -77,13 +74,16 @@ DC_ATTRS = [
 def step_convert_to_json():
     print("\nStep 1: Raw data → standard JSON")
     print("-" * 40)
-    for name, func in CONVERTERS:
+    for name, output, func in CONVERTERS:
         print(f"  {name}... ", end="", flush=True)
         try:
-            func()
+            result = func()
+            with open(os.path.join(JSON_DIR, f"{output}_standard.json"), "w", encoding="utf-8") as f:
+                json.dump(result, f, ensure_ascii=False)
             print("ok")
         except Exception as e:
             print(f"FAILED ({e})")
+
 
 def json_to_lmf(json_path, xml_path):
     with open(json_path, "r", encoding="utf-8") as f:
@@ -136,15 +136,15 @@ def json_to_lmf(json_path, xml_path):
             ET.SubElement(synset, "Example").text = ex
 
     ET.indent(resource, space="  ")
-    xml_str = ET.tostring(resource, encoding="unicode", xml_declaration=True)
-    xml_str = xml_str.replace(
-        "<?xml version='1.0' encoding='us-ascii'?>",
-        '<?xml version="1.0" encoding="UTF-8"?>\n'
-        '<!DOCTYPE LexicalResource SYSTEM "WN-LMF-1_4.dtd">',
+    xml_str = (
+            '<?xml version="1.0" encoding="UTF-8"?>\n'
+            '<!DOCTYPE LexicalResource SYSTEM "http://globalwordnet.github.io/schemas/WN-LMF-1.4.dtd">\n'
+            + ET.tostring(resource, encoding="unicode")
     )
 
     with open(xml_path, "w", encoding="utf-8") as f:
         f.write(xml_str)
+
 
 def step_convert_to_xml():
     print("\nStep 2: Standard JSON → WN-LMF XML")
@@ -162,6 +162,7 @@ def step_convert_to_xml():
             print("ok")
         except Exception as e:
             print(f"FAILED ({e})")
+
 
 def validate_lmf(xml_path):
     with open(xml_path, "rb") as f:
@@ -195,7 +196,7 @@ def step_validate():
             n_valid += 1
         else:
             print(f"  INVALID  {fname}")
-            for err in errors:
+            for err in errors[:10]:
                 print(f"           {err}")
             n_invalid += 1
 
